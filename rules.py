@@ -10,14 +10,20 @@ class RelationType(str, Enum):
     MANY_TO_MANY = "many-to-many"
 
 
+VALID_ENTITY_FIELDS = {"parent"}
+
+
 class Relation(BaseModel, frozen=True):
     type: RelationType
     field: str | None = None
 
     @model_validator(mode="after")
-    def field_required_for_one_to_many(self) -> "Relation":
-        if self.type == RelationType.ONE_TO_MANY and not self.field:
-            raise ValueError("one-to-many relation requires 'field'")
+    def validate_relation(self) -> "Relation":
+        if self.type == RelationType.ONE_TO_MANY:
+            if not self.field:
+                raise ValueError("one-to-many relation requires 'field'")
+            if self.field not in VALID_ENTITY_FIELDS:
+                raise ValueError(f"unknown field '{self.field}', must be one of {VALID_ENTITY_FIELDS}")
         return self
 
 
