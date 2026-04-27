@@ -51,7 +51,7 @@ def propagate(conn: sqlite3.Connection, rules: list[Rule]) -> list[TagAction]:
     return actions
 
 
-def _find_one_to_many(conn: sqlite3.Connection, rule: Rule) -> list[tuple]:
+def _find_one_to_many(conn: sqlite3.Connection, rule: Rule) -> list[tuple[str, int, str, str, str]]:
     return conn.execute(
         f"""
         SELECT src_tag.value, dst.id, dst.type, src.name, dst.name
@@ -68,7 +68,7 @@ def _find_one_to_many(conn: sqlite3.Connection, rule: Rule) -> list[tuple]:
     ).fetchall()
 
 
-def _find_many_to_many(conn: sqlite3.Connection, rule: Rule) -> list[tuple]:
+def _find_many_to_many(conn: sqlite3.Connection, rule: Rule) -> list[tuple[str, int, str, str, str]]:
     return conn.execute(
         """
         SELECT src_tag.value, dst.id, dst.type, src.name, dst.name
@@ -94,19 +94,19 @@ def _upsert_tag(
     value: str,
     rule_label: str,
 ) -> TagStatus:
-    row = conn.execute(
+    existing = conn.execute(
         "SELECT value FROM entity_tags WHERE entity_id = :entity_id AND key = :key",
         {"entity_id": dst_id, "key": key},
     ).fetchone()
 
-    if row is None:
+    if existing is None:
         conn.execute(
             """INSERT INTO entity_tags (entity_id, entity_type, key, value)
                VALUES (:entity_id, :entity_type, :key, :value)""",
             {"entity_id": dst_id, "entity_type": dst_type, "key": key, "value": value},
         )
         return TagStatus.INSERTED
-    elif row[0] != value:
+    elif existing[0] != value:
         conn.execute(
             """INSERT OR IGNORE INTO tag_conflicts
                (entity_id, key, existing_value, attempted_value, rule)
@@ -114,7 +114,7 @@ def _upsert_tag(
             {
                 "entity_id": dst_id,
                 "key": key,
-                "existing_value": row[0],
+                "existing_value": existing[0],
                 "attempted_value": value,
                 "rule": rule_label,
             },

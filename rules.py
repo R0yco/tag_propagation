@@ -10,7 +10,7 @@ class RelationType(str, Enum):
     MANY_TO_MANY = "many-to-many"
 
 
-VALID_ENTITY_FIELDS = {"parent"}
+ALLOWED_RELATION_FIELDS = {"parent"}
 
 
 class Relation(BaseModel, frozen=True):
@@ -22,9 +22,9 @@ class Relation(BaseModel, frozen=True):
         if self.type == RelationType.ONE_TO_MANY:
             if not self.field:
                 raise ValueError("one-to-many relation requires 'field'")
-            if self.field not in VALID_ENTITY_FIELDS:
+            if self.field not in ALLOWED_RELATION_FIELDS:
                 raise ValueError(
-                    f"unknown field '{self.field}', must be one of {VALID_ENTITY_FIELDS}"
+                    f"unknown field '{self.field}', must be one of {ALLOWED_RELATION_FIELDS}" # SQLI protection
                 )
         return self
 

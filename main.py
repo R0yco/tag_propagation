@@ -89,9 +89,9 @@ def main() -> int:
     if args.verbose:
         _print_results(actions)
     else:
-        inserted = sum(1 for a in actions if a.status == "inserted")
-        skipped = sum(1 for a in actions if a.status == "skipped")
-        conflicts = sum(1 for a in actions if a.status == "conflict")
+        inserted = sum(1 for a in actions if a.status == TagStatus.INSERTED)
+        skipped = sum(1 for a in actions if a.status == TagStatus.SKIPPED)
+        conflicts = sum(1 for a in actions if a.status == TagStatus.CONFLICT)
         print(f"{inserted} propagated · {skipped} skipped · {conflicts} conflicts")
 
     return 0
