@@ -3,7 +3,7 @@ name = "miggo-tag-propagation"
 version = "0.1.0"
 description = "Rule-driven tag propagation across an entity graph in SQLite."
 requires-python = ">=3.11"
-dependencies = ["pydantic"]
+dependencies = ["pydantic", "tabulate"]
 
 [dependency-groups]
 dev = ["pytest"]
