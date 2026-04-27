@@ -7,9 +7,9 @@ Each rule names a `tag`, a source entity type, a destination entity type, and a 
 ## Usage
 
 ```sh
-uv run main.py -f rules.json -d database.sqlite --init        # first run (bootstraps the DB)
-uv run main.py -f rules.json -d database.sqlite               # subsequent runs
-uv run main.py -f rules.json -d database.sqlite --verbose     # show the propagation as a table
+uv run src/main.py -f rules.json -d database.sqlite --init        # first run (bootstraps the DB)
+uv run src/main.py -f rules.json -d database.sqlite               # subsequent runs
+uv run src/main.py -f rules.json -d database.sqlite --verbose     # show the propagation as a table
 uv run pytest                                                 # run the test suite
 ```
 
@@ -19,14 +19,22 @@ The database is read and written in place. Re-running is safe — nothing duplic
 
 | File | Purpose |
 |---|---|
-| `schema.sql` | DDL + seed data |
 | `rules.json` | Example rules from the brief |
-| `db.py` | `bootstrap_database`, `open_database` |
-| `rules.py` | Pydantic `Rule`/`Relation` models, `load_rules` |
-| `propagate.py` | Propagation engine, `TagAction`, `TagStatus` |
-| `main.py` | CLI |
-| `conftest.py` | Shared `db_path` pytest fixture |
-| `test_propagate.py` | One test per behavior in the brief |
+| `src/schema.sql` | DDL + seed data |
+| `src/db.py` | `bootstrap_database`, `open_database` |
+| `src/rules.py` | Pydantic `Rule`/`Relation` models, `load_rules` |
+| `src/propagate.py` | Propagation engine, `TagAction`, `TagStatus` |
+| `src/main.py` | CLI |
+| `tests/conftest.py` | Shared `db_path` pytest fixture |
+| `tests/test_propagate.py` | One test per behavior in the brief |
+
+## Idempotency
+
+`entity_tags` is keyed on `(entity_id, key)`. Duplicate tag rows can't exist.
+
+`_upsert_tag` SELECTs the existing value before writing, returning `SKIPPED` when it matches and `CONFLICT` when it doesn't. Without the read, a second insert with a different value would be silently squashed by the PK, and we'd never know to log it as a conflict.
+
+`tag_conflicts` is keyed on the full `(entity_id, key, existing_value, attempted_value, rule)` tuple with `INSERT OR IGNORE`. The conflict log doesn't grow when the same conflict is detected twice.
 
 ## Not implemented
 

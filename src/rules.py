@@ -10,6 +10,8 @@ class RelationType(str, Enum):
     MANY_TO_MANY = "many-to-many"
 
 
+# SQLite can't parameterize column names, so the relation field is interpolated
+# into SQL as an f-string. This whitelist prevents SQL injection through that path.
 ALLOWED_RELATION_FIELDS = {"parent"}
 
 
@@ -24,7 +26,7 @@ class Relation(BaseModel, frozen=True):
                 raise ValueError("one-to-many relation requires 'field'")
             if self.field not in ALLOWED_RELATION_FIELDS:
                 raise ValueError(
-                    f"unknown field '{self.field}', must be one of {ALLOWED_RELATION_FIELDS}" # SQLI protection
+                    f"unknown field '{self.field}', must be one of {ALLOWED_RELATION_FIELDS}"
                 )
         return self
 

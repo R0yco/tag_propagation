@@ -16,7 +16,14 @@ from propagate import TagAction, TagStatus, propagate
 from rules import load_rules
 
 
-def _print_results(actions: list[TagAction]) -> None:
+def _print_summary(actions: list[TagAction]) -> None:
+    inserted = sum(1 for a in actions if a.status == TagStatus.INSERTED)
+    skipped = sum(1 for a in actions if a.status == TagStatus.SKIPPED)
+    conflicts = sum(1 for a in actions if a.status == TagStatus.CONFLICT)
+    print(f"{inserted} propagated · {skipped} skipped · {conflicts} conflicts")
+
+
+def _print_table(actions: list[TagAction]) -> None:
     rows = [
         (
             a.status,
@@ -33,12 +40,7 @@ def _print_results(actions: list[TagAction]) -> None:
             tablefmt="rounded_outline",
         )
     )
-
     print()
-    inserted = sum(1 for a in actions if a.status == TagStatus.INSERTED)
-    skipped = sum(1 for a in actions if a.status == TagStatus.SKIPPED)
-    conflicts = sum(1 for a in actions if a.status == TagStatus.CONFLICT)
-    print(f"{inserted} propagated · {skipped} skipped · {conflicts} conflicts")
 
 
 def parse_args() -> argparse.Namespace:
@@ -87,12 +89,8 @@ def main() -> int:
         conn.close()
 
     if args.verbose:
-        _print_results(actions)
-    else:
-        inserted = sum(1 for a in actions if a.status == TagStatus.INSERTED)
-        skipped = sum(1 for a in actions if a.status == TagStatus.SKIPPED)
-        conflicts = sum(1 for a in actions if a.status == TagStatus.CONFLICT)
-        print(f"{inserted} propagated · {skipped} skipped · {conflicts} conflicts")
+        _print_table(actions)
+    _print_summary(actions)
 
     return 0
 
