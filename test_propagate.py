@@ -71,7 +71,7 @@ def test_records_conflict(db_path: Path):
         conn.commit()
         propagate(conn, [RULES[0]])
         rows = conn.execute(
-            "SELECT entity_id, key, existing_value, attempted_value FROM tag_conflicts;"
+            "SELECT entity_id, key, existing_value, attempted_value, rule FROM tag_conflicts;"
         ).fetchall()
         tag = conn.execute(
             "SELECT value FROM entity_tags WHERE entity_id=2 AND key='internet-facing';"
@@ -79,5 +79,21 @@ def test_records_conflict(db_path: Path):
     finally:
         conn.close()
 
-    assert rows == [(2, "internet-facing", "FALSE", "TRUE")]
+    assert rows == [(2, "internet-facing", "FALSE", "TRUE", "ENDPOINT:internet-facing->SERVICE")]
     assert tag == ("FALSE",)
+
+
+def test_skip_does_not_create_conflict(db_path: Path):
+    conn = open_database(db_path)
+    try:
+        conn.execute(
+            "INSERT INTO entity_tags (entity_id, entity_type, key, value) "
+            "VALUES (2, 'SERVICE', 'internet-facing', 'TRUE')"
+        )
+        conn.commit()
+        propagate(conn, [RULES[0]])
+        (count,) = conn.execute("SELECT COUNT(*) FROM tag_conflicts;").fetchone()
+    finally:
+        conn.close()
+
+    assert count == 0

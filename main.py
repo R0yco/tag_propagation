@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.11"
-# dependencies = []
+# dependencies = ["pydantic"]
 # ///
 """Tag propagation system.
 
@@ -16,8 +16,40 @@ import sys
 from pathlib import Path
 
 from db import open_database
-from propagate import propagate
+from propagate import TagAction, propagate
 from rules import load_rules
+
+MARKERS = {"inserted": "[+]", "skipped": "[~]", "conflict": "[!]"}
+
+
+def _print_results(actions: list[TagAction]) -> None:
+    groups: dict[tuple, list[TagAction]] = {}
+    for action in actions:
+        key = (action.rule_label, action.src_type, action.src_name)
+        groups.setdefault(key, []).append(action)
+
+    prev_rule = None
+    for (rule_label, src_type, src_name), group in groups.items():
+        if rule_label != prev_rule:
+            if prev_rule is not None:
+                print()
+            prev_rule = rule_label
+
+        src_str = f"{src_type}: {src_name}"
+        padding = " " * len(src_str)
+
+        for i, action in enumerate(group):
+            prefix = src_str if i == 0 else padding
+            arrow = f"──{action.key}={action.value}──▶"
+            dst_str = f"{action.dst_type}: {action.dst_name}"
+            marker = MARKERS[action.status]
+            print(f"{prefix}  {arrow}  {dst_str}  {marker}")
+
+    print()
+    inserted  = sum(1 for a in actions if a.status == "inserted")
+    skipped   = sum(1 for a in actions if a.status == "skipped")
+    conflicts = sum(1 for a in actions if a.status == "conflict")
+    print(f"{inserted} propagated · {skipped} skipped · {conflicts} conflicts")
 
 
 def parse_args() -> argparse.Namespace:
@@ -40,11 +72,11 @@ def main() -> int:
 
     conn = open_database(args.database)
     try:
-        propagate(conn, rules)
+        actions = propagate(conn, rules)
     finally:
         conn.close()
 
-    print(f"Applied {len(rules)} rule(s).")
+    _print_results(actions)
     return 0
 
 
