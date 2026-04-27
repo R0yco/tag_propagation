@@ -31,5 +31,5 @@ The database is read and written in place. Re-running is safe — nothing duplic
 ## Not implemented
 
 - **Transitive propagation.** Each rule traverses one edge. If a propagated tag should keep flowing further along the graph, the engine would need a separate iteration mechanism — not added because the brief's scenario stops at one hop.
-- **Bulk SQL upsert.** Each rule fires `1 + 2N` queries (one find, then probe + write per destination). For thousands of entities a set-based `INSERT … ON CONFLICT` per rule would be faster, at the cost of harder per-action status reconstruction.
+- **Bulk SQL upsert.** Each destination is checked and written individually. For large graphs this would be slower than a single set-based statement per rule, at the cost of losing the per-action status used by the verbose output.
 - **Logging beyond stdout.** A real service would emit structured logs; for a CLI, `print` is fine.
