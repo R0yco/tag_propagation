@@ -42,9 +42,9 @@ def test_produces_expected_tags(propagated_db: Path):
         conn.close()
 
     assert rows == [
-        (1, "internet-facing",  "TRUE"),
+        (1, "internet-facing", "TRUE"),
         (2, "data-sensitivity", "PHI"),
-        (2, "internet-facing",  "TRUE"),
+        (2, "internet-facing", "TRUE"),
         (3, "data-sensitivity", "PHI"),
         (4, "data-sensitivity", "PHI"),
     ]
@@ -79,7 +79,9 @@ def test_records_conflict(db_path: Path):
     finally:
         conn.close()
 
-    assert rows == [(2, "internet-facing", "FALSE", "TRUE", "ENDPOINT:internet-facing->SERVICE")]
+    assert rows == [
+        (2, "internet-facing", "FALSE", "TRUE", "ENDPOINT:internet-facing->SERVICE")
+    ]
     assert tag == ("FALSE",)
 
 

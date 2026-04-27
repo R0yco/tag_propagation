@@ -23,7 +23,9 @@ class Relation(BaseModel, frozen=True):
             if not self.field:
                 raise ValueError("one-to-many relation requires 'field'")
             if self.field not in VALID_ENTITY_FIELDS:
-                raise ValueError(f"unknown field '{self.field}', must be one of {VALID_ENTITY_FIELDS}")
+                raise ValueError(
+                    f"unknown field '{self.field}', must be one of {VALID_ENTITY_FIELDS}"
+                )
         return self
 
 

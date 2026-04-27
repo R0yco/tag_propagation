@@ -25,50 +25,58 @@ def propagate(conn: sqlite3.Connection, rules: list[Rule]) -> list[TagAction]:
         else:
             pairs = _find_many_to_many(conn, rule)
 
-        for (value, dst_id, dst_type, src_name, dst_name) in pairs:
+        for value, dst_id, dst_type, src_name, dst_name in pairs:
             status = _upsert_tag(conn, dst_id, dst_type, rule.tag, value, rule.label)
-            actions.append(TagAction(
-                rule_label=rule.label,
-                src_type=rule.source_entity,
-                src_name=src_name,
-                dst_type=dst_type,
-                dst_name=dst_name,
-                key=rule.tag,
-                value=value,
-                status=status,
-            ))
+            actions.append(
+                TagAction(
+                    rule_label=rule.label,
+                    src_type=rule.source_entity,
+                    src_name=src_name,
+                    dst_type=dst_type,
+                    dst_name=dst_name,
+                    key=rule.tag,
+                    value=value,
+                    status=status,
+                )
+            )
 
     conn.commit()
     return actions
 
 
 def _find_one_to_many(conn: sqlite3.Connection, rule: Rule) -> list[tuple]:
-    return conn.execute(f"""
+    return conn.execute(
+        f"""
         SELECT src_tag.value, dst.id, dst.type, src.name, dst.name
         FROM entities src
         JOIN entity_tags src_tag ON src_tag.entity_id = src.id AND src_tag.key = :tag
         JOIN entities dst        ON dst.id = src.{rule.relation.field} AND dst.type = :destination_entity
         WHERE src.type = :source_entity
-    """, {
-        "tag": rule.tag,
-        "source_entity": rule.source_entity,
-        "destination_entity": rule.destination_entity,
-    }).fetchall()
+    """,
+        {
+            "tag": rule.tag,
+            "source_entity": rule.source_entity,
+            "destination_entity": rule.destination_entity,
+        },
+    ).fetchall()
 
 
 def _find_many_to_many(conn: sqlite3.Connection, rule: Rule) -> list[tuple]:
-    return conn.execute("""
+    return conn.execute(
+        """
         SELECT src_tag.value, dst.id, dst.type, src.name, dst.name
         FROM entities src
         JOIN entity_tags src_tag   ON src_tag.entity_id = src.id AND src_tag.key = :tag
         JOIN entity_connections ec ON ec.source_id = src.id
         JOIN entities dst          ON dst.id = ec.destination_id AND dst.type = :destination_entity
         WHERE src.type = :source_entity
-    """, {
-        "tag": rule.tag,
-        "source_entity": rule.source_entity,
-        "destination_entity": rule.destination_entity,
-    }).fetchall()
+    """,
+        {
+            "tag": rule.tag,
+            "source_entity": rule.source_entity,
+            "destination_entity": rule.destination_entity,
+        },
+    ).fetchall()
 
 
 def _upsert_tag(
