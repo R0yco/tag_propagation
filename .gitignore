@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# uv
+.venv/
+uv.lock
+
+# Pytest
+.pytest_cache/
+
+# Built database artifact (regenerate from schema.sql)
+database.sqlite
