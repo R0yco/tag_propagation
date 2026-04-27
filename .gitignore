@@ -12,3 +12,6 @@ uv.lock
 
 # Built database artifact (regenerate from schema.sql)
 database.sqlite
+
+# Claude Code
+.claude/
