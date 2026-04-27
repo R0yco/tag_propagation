@@ -1,0 +1,21 @@
+{
+  "rules": [
+    {
+      "tag": "internet-facing",
+      "source_entity": "ENDPOINT",
+      "destination_entity": "SERVICE",
+      "relation": {
+        "type": "one-to-many",
+        "field": "parent"
+      }
+    },
+    {
+      "tag": "data-sensitivity",
+      "source_entity": "DATABASE",
+      "destination_entity": "SERVICE",
+      "relation": {
+        "type": "many-to-many"
+      }
+    }
+  ]
+}
