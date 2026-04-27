@@ -28,11 +28,11 @@ def propagate(conn: sqlite3.Connection, rules: list[Rule]) -> list[TagAction]:
 
     for rule in rules:
         if rule.relation.type == RelationType.ONE_TO_MANY:
-            pairs = _find_one_to_many(conn, rule)
+            matches = _find_one_to_many(conn, rule)
         else:
-            pairs = _find_many_to_many(conn, rule)
+            matches = _find_many_to_many(conn, rule)
 
-        for value, dst_id, dst_type, src_name, dst_name in pairs:
+        for value, dst_id, dst_type, src_name, dst_name in matches:
             status = _upsert_tag(conn, dst_id, dst_type, rule.tag, value, rule.label)
             actions.append(
                 TagAction(
