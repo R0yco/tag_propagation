@@ -2,9 +2,7 @@
 
 Usage:
     uv run main.py -f rules.json -d database.sqlite
-
-The database is treated as an input — it must exist before running. To create
-a fresh seeded database for testing, see test_main.py.
+    uv run main.py -f rules.json -d database.sqlite --init   # create and seed on first run
 """
 
 import argparse
