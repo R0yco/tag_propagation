@@ -1,7 +1,14 @@
 import sqlite3
 from dataclasses import dataclass
+from enum import StrEnum
 
 from rules import Rule, RelationType
+
+
+class TagStatus(StrEnum):
+    INSERTED = "inserted"
+    SKIPPED = "skipped"
+    CONFLICT = "conflict"
 
 
 @dataclass
@@ -13,7 +20,7 @@ class TagAction:
     dst_name: str
     key: str
     value: str
-    status: str  # "inserted" | "skipped" | "conflict"
+    status: TagStatus
 
 
 def propagate(conn: sqlite3.Connection, rules: list[Rule]) -> list[TagAction]:
@@ -86,7 +93,7 @@ def _upsert_tag(
     key: str,
     value: str,
     rule_label: str,
-) -> str:
+) -> TagStatus:
     row = conn.execute(
         "SELECT value FROM entity_tags WHERE entity_id = :entity_id AND key = :key",
         {"entity_id": dst_id, "key": key},
@@ -98,7 +105,7 @@ def _upsert_tag(
                VALUES (:entity_id, :entity_type, :key, :value)""",
             {"entity_id": dst_id, "entity_type": dst_type, "key": key, "value": value},
         )
-        return "inserted"
+        return TagStatus.INSERTED
     elif row[0] != value:
         conn.execute(
             """INSERT OR IGNORE INTO tag_conflicts
@@ -112,6 +119,6 @@ def _upsert_tag(
                 "rule": rule_label,
             },
         )
-        return "conflict"
+        return TagStatus.CONFLICT
     else:
-        return "skipped"
+        return TagStatus.SKIPPED

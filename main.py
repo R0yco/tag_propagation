@@ -12,7 +12,7 @@ from pathlib import Path
 from tabulate import tabulate
 
 from db import bootstrap_database, open_database
-from propagate import TagAction, propagate
+from propagate import TagAction, TagStatus, propagate
 from rules import load_rules
 
 
@@ -35,9 +35,9 @@ def _print_results(actions: list[TagAction]) -> None:
     )
 
     print()
-    inserted = sum(1 for a in actions if a.status == "inserted")
-    skipped = sum(1 for a in actions if a.status == "skipped")
-    conflicts = sum(1 for a in actions if a.status == "conflict")
+    inserted = sum(1 for a in actions if a.status == TagStatus.INSERTED)
+    skipped = sum(1 for a in actions if a.status == TagStatus.SKIPPED)
+    conflicts = sum(1 for a in actions if a.status == TagStatus.CONFLICT)
     print(f"{inserted} propagated · {skipped} skipped · {conflicts} conflicts")
 
 
