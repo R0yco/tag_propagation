@@ -1,7 +1,3 @@
-# /// script
-# requires-python = ">=3.11"
-# dependencies = ["pydantic"]
-# ///
 """Tag propagation system.
 
 Usage:
@@ -15,7 +11,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from db import open_database
+from db import bootstrap_database, open_database
 from propagate import TagAction, propagate
 from rules import load_rules
 
@@ -57,6 +53,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("-f", "--rules", required=True, type=Path, help="Path to rules JSON file.")
     parser.add_argument("-d", "--database", required=True, type=Path, help="Path to SQLite database file.")
     parser.add_argument("-v", "--verbose", action="store_true", help="Show per-tag propagation output.")
+    parser.add_argument("--init", action="store_true", help="Create and seed the database if it does not exist.")
     return parser.parse_args()
 
 
@@ -64,7 +61,10 @@ def main() -> int:
     args = parse_args()
 
     if not args.database.exists():
-        sys.exit(f"Database not found: {args.database}")
+        if not args.init:
+            sys.exit(f"Database not found: {args.database} (use --init to create it)")
+        bootstrap_database(args.database)
+        print(f"Initialized database: {args.database}")
 
     try:
         rules = load_rules(args.rules)
