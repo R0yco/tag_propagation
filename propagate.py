@@ -80,22 +80,29 @@ def _upsert_tag(
     rule_label: str,
 ) -> str:
     row = conn.execute(
-        "SELECT value FROM entity_tags WHERE entity_id = ? AND key = ?",
-        (dst_id, key),
+        "SELECT value FROM entity_tags WHERE entity_id = :entity_id AND key = :key",
+        {"entity_id": dst_id, "key": key},
     ).fetchone()
 
     if row is None:
         conn.execute(
-            "INSERT INTO entity_tags (entity_id, entity_type, key, value) VALUES (?, ?, ?, ?)",
-            (dst_id, dst_type, key, value),
+            """INSERT INTO entity_tags (entity_id, entity_type, key, value)
+               VALUES (:entity_id, :entity_type, :key, :value)""",
+            {"entity_id": dst_id, "entity_type": dst_type, "key": key, "value": value},
         )
         return "inserted"
     elif row[0] != value:
         conn.execute(
             """INSERT OR IGNORE INTO tag_conflicts
                (entity_id, key, existing_value, attempted_value, rule)
-               VALUES (?, ?, ?, ?, ?)""",
-            (dst_id, key, row[0], value, rule_label),
+               VALUES (:entity_id, :key, :existing_value, :attempted_value, :rule)""",
+            {
+                "entity_id": dst_id,
+                "key": key,
+                "existing_value": row[0],
+                "attempted_value": value,
+                "rule": rule_label,
+            },
         )
         return "conflict"
     else:
