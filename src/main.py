@@ -26,7 +26,7 @@ def _print_summary(actions: list[TagAction]) -> None:
 def _print_table(actions: list[TagAction]) -> None:
     rows = [
         (
-            a.status,
+            a.status.value,
             f"{a.src_type}: {a.src_name}",
             f"{a.key}={a.value}",
             f"{a.dst_type}: {a.dst_name}",
