@@ -28,6 +28,8 @@ class Relation(BaseModel, frozen=True):
                 raise ValueError(
                     f"unknown field '{self.field}', must be one of {ALLOWED_RELATION_FIELDS}"
                 )
+        elif self.field is not None:
+            raise ValueError(f"{self.type.value} relation must not specify 'field'")
         return self
 
 
