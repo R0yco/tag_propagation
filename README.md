@@ -43,6 +43,10 @@ The database is read and written in place. Re-running is safe — nothing duplic
 
 Raw `sqlite3` with parameterized queries instead of SQLAlchemy or similar. With 4 tables and 5 queries, an ORM would be more setup than the queries it replaces.
 
+### Matching is done in SQL
+
+Each rule's source-to-destination matching is expressed as a JOIN. The alternative — iterating in Python — means rewriting what SQL already does.
+
 ## Tests
 
 Run with `uv run pytest`. Five tests:
