@@ -11,7 +11,7 @@ class TagStatus(StrEnum):
     CONFLICT = "conflict"
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class TagAction:
     rule_label: str
     src_type: str
