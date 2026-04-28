@@ -26,7 +26,7 @@ The database is read and written in place. Re-running is safe — nothing duplic
 | `src/propagate.py` | Propagation engine, `TagAction`, `TagStatus` |
 | `src/main.py` | CLI |
 | `tests/conftest.py` | Shared `db_path` pytest fixture |
-| `tests/test_propagate.py` | Tests for each brief requirement plus a multi-source contention case |
+| `tests/test_propagate.py` | Test suite (see below) |
 
 ## design choices
 ### Idempotency
@@ -41,6 +41,16 @@ The database is read and written in place. Re-running is safe — nothing duplic
 
 ### on not using an ORM for SQL
 I chose using sqlite library directly because of the small scope, instead of opting for an ORM like sqlalchemy or prisma. I judged that the scope here is too small to demand it, and the result came out pretty clean with raw sql.
+
+## Tests
+
+Run with `uv run pytest`. Five tests:
+
+- **test_produces_expected_tags** — runs the brief's test scenario and checks the resulting tags match.
+- **test_is_idempotent** — runs propagation twice, asserts the second run changes nothing.
+- **test_records_conflict** — pre-plants a different value on a destination, asserts the conflict is logged and the existing value is preserved.
+- **test_skip_does_not_create_conflict** — pre-plants the same value on a destination, asserts nothing is logged.
+- **test_multiple_sources_different_values_records_conflict** — two sources try to set different values on the same destination; asserts one wins and the other is logged as a conflict.
 
 ## Not implemented
 
