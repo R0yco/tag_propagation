@@ -35,6 +35,10 @@ The database is read and written in place. Re-running is safe — nothing duplic
 - `_upsert_tag` reads the existing value before writing, so it can return `SKIPPED` or `CONFLICT` instead of the PK silently squashing the insert.
 - `tag_conflicts` UNIQUE + `INSERT OR IGNORE` — the conflict log is a set, not a list.
 
+### Pydantic for rule parsing
+
+`rules.json` is validated by Pydantic — types, required fields, and an allowlist for `field` so it's safe to interpolate into SQL. Internal types (`TagAction`, `TagStatus`) skip Pydantic; they're not parsed from input.
+
 ### on not using an ORM for SQL
 I chose using sqlite library directly because of the small scope, instead of opting for an ORM like sqlalchemy or prisma. I judged that the scope here is too small to demand it, and the result came out pretty clean with raw sql.
 
