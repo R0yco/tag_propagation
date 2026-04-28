@@ -51,7 +51,9 @@ def propagate(conn: sqlite3.Connection, rules: list[Rule]) -> list[TagAction]:
     return actions
 
 
-def _find_one_to_many(conn: sqlite3.Connection, rule: Rule) -> list[tuple[str, int, str, str, str]]:
+def _find_one_to_many(
+    conn: sqlite3.Connection, rule: Rule
+) -> list[tuple[str, int, str, str, str]]:
     return conn.execute(
         f"""
         SELECT src_tag.value, dst.id, dst.type, src.name, dst.name
@@ -68,7 +70,9 @@ def _find_one_to_many(conn: sqlite3.Connection, rule: Rule) -> list[tuple[str, i
     ).fetchall()
 
 
-def _find_many_to_many(conn: sqlite3.Connection, rule: Rule) -> list[tuple[str, int, str, str, str]]:
+def _find_many_to_many(
+    conn: sqlite3.Connection, rule: Rule
+) -> list[tuple[str, int, str, str, str]]:
     return conn.execute(
         """
         SELECT src_tag.value, dst.id, dst.type, src.name, dst.name
