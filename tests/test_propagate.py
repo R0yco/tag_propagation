@@ -99,3 +99,38 @@ def test_skip_does_not_create_conflict(db_path: Path):
         conn.close()
 
     assert count == 0
+
+
+def test_multiple_sources_different_values_records_conflict(db_path: Path):
+    conn = open_database(db_path)
+    try:
+        # Add a second database connected to service 2 with a different sensitivity value.
+        # Service 2 receives data-sensitivity from both pg-healthcare (PHI) and pg-billing (PII).
+        # Whichever propagates first wins; the other becomes a conflict.
+        conn.execute(
+            "INSERT INTO entities (id, type, name, parent) "
+            "VALUES (5, 'DATABASE', 'pg-billing', NULL)"
+        )
+        conn.execute(
+            "INSERT INTO entity_connections (source_id, destination_id) VALUES (5, 2)"
+        )
+        conn.execute(
+            "INSERT INTO entity_tags (entity_id, entity_type, key, value) "
+            "VALUES (5, 'DATABASE', 'data-sensitivity', 'PII')"
+        )
+        conn.commit()
+
+        propagate(conn, [RULES[1]])
+
+        service_tag = conn.execute(
+            "SELECT value FROM entity_tags WHERE entity_id=2 AND key='data-sensitivity'"
+        ).fetchone()
+        conflicts = conn.execute(
+            "SELECT existing_value, attempted_value FROM tag_conflicts WHERE entity_id=2"
+        ).fetchall()
+    finally:
+        conn.close()
+
+    assert service_tag[0] in {"PHI", "PII"}
+    assert len(conflicts) == 1
+    assert set(conflicts[0]) == {"PHI", "PII"}
