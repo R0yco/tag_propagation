@@ -28,7 +28,8 @@ The database is read and written in place. Re-running is safe — nothing duplic
 | `tests/conftest.py` | Shared `db_path` pytest fixture |
 | `tests/test_propagate.py` | One test per behavior in the brief |
 
-## Idempotency
+## design choices
+### Idempotency
 
 `entity_tags` is keyed on `(entity_id, key)`. Duplicate tag rows can't exist.
 
@@ -36,8 +37,12 @@ The database is read and written in place. Re-running is safe — nothing duplic
 
 `tag_conflicts` is keyed on the full `(entity_id, key, existing_value, attempted_value, rule)` tuple with `INSERT OR IGNORE`. The conflict log doesn't grow when the same conflict is detected twice.
 
+### on not using an ORM for SQL
+I chose using sqlite library directly because of the small scope, instead of opting for an ORM like sqlalchemy or prisma. I judged that the scope here is too small to demand it, and the result came out pretty clean with raw sql.
+
 ## Not implemented
 
 - **Transitive propagation.** Each rule traverses one edge. If a propagated tag should keep flowing further along the graph, the engine would need a separate iteration mechanism — not added because the brief's scenario stops at one hop.
 - **Bulk SQL upsert.** Each destination is checked and written individually. For large graphs this would be slower than a single set-based statement per rule, at the cost of losing the per-action status used by the verbose output.
 - **Logging beyond stdout.** A real service would emit structured logs; for a CLI, `print` is fine.
+
