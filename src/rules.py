@@ -49,6 +49,8 @@ class RulesFile(BaseModel):
 def load_rules(path: Path) -> list[Rule]:
     try:
         data = json.loads(path.read_text())
+    except FileNotFoundError as e:
+        raise ValueError(f"Rules file not found: {path}") from e
     except json.JSONDecodeError as e:
         raise ValueError(f"Invalid JSON in {path}: {e}") from e
 
