@@ -7,10 +7,10 @@ Each rule names a `tag`, a source entity type, a destination entity type, and a 
 ## Usage
 
 ```sh
-uv run src/main.py -f rules.json -d database.sqlite --init        # first run (bootstraps the DB)
-uv run src/main.py -f rules.json -d database.sqlite               # subsequent runs
-uv run src/main.py -f rules.json -d database.sqlite --verbose     # show the propagation as a table
-uv run pytest                                                 # run the test suite
+uv run src/main.py -f rules.json -d database.sqlite --init     # first run (bootstraps the DB)
+uv run src/main.py -f rules.json -d database.sqlite            # subsequent runs
+uv run src/main.py -f rules.json -d database.sqlite --verbose  # show the propagation as a table
+uv run pytest                                                  # run the test suite
 ```
 
 The database is read and written in place. Re-running is safe — nothing duplicates. Mismatches between an existing tag and an inferred one are recorded in `tag_conflicts` rather than overwritten.
@@ -28,7 +28,7 @@ The database is read and written in place. Re-running is safe — nothing duplic
 | `tests/conftest.py` | Shared `db_path` pytest fixture |
 | `tests/test_propagate.py` | Test suite (see below) |
 
-## design choices
+## Design choices
 ### Idempotency
 
 - `entity_tags` PK on `(entity_id, key)` — duplicate rows impossible.
@@ -39,8 +39,9 @@ The database is read and written in place. Re-running is safe — nothing duplic
 
 `rules.json` is validated by Pydantic — types, required fields, and an allowlist for `field` so it's safe to interpolate into SQL. Internal types (`TagAction`, `TagStatus`) skip Pydantic; they're not parsed from input.
 
-### on not using an ORM for SQL
-I chose using sqlite library directly because of the small scope, instead of opting for an ORM like sqlalchemy or prisma. I judged that the scope here is too small to demand it, and the result came out pretty clean with raw sql.
+### Raw SQL, no ORM
+
+Raw `sqlite3` with parameterized queries instead of SQLAlchemy or similar. With 4 tables and 5 queries, an ORM would be more setup than the queries it replaces.
 
 ## Tests
 
