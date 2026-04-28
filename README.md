@@ -26,7 +26,7 @@ The database is read and written in place. Re-running is safe — nothing duplic
 | `src/propagate.py` | Propagation engine, `TagAction`, `TagStatus` |
 | `src/main.py` | CLI |
 | `tests/conftest.py` | Shared `db_path` pytest fixture |
-| `tests/test_propagate.py` | One test per behavior in the brief |
+| `tests/test_propagate.py` | Tests for each brief requirement plus a multi-source contention case |
 
 ## design choices
 ### Idempotency
