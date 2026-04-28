@@ -59,3 +59,5 @@ Run with `uv run pytest`. Five tests:
 - **Bulk SQL upsert.** Each destination is checked and written individually. For large graphs this would be slower than a single set-based statement per rule, at the cost of losing the per-action status used by the verbose output.
 - **Logging beyond stdout.** A real service would emit structured logs; for a CLI, `print` is fine.
 
+
+BUILT IN COLAB WITH CLAUDE CODE- opus 4.7
